@@ -1,1 +1,1 @@
-javascript:(function(){var script=document.createElement('script');script.src='https://raw.github.com/frends/FRENDS_Monthly_Hackathon/devel/storage/rhiokim/js/FTS.js?'+Math.floor((+new Date)/(864e5));document.body.appendChild(script);})()
+javascript:(function(){var script=document.createElement('script');script.src='http://localhost:8081/js/FTS.js?'+Math.floor((+new Date)/(864e5));document.body.appendChild(script);})()

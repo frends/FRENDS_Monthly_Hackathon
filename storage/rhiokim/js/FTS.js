@@ -11,15 +11,19 @@
 		var div = document.createElement('div');
 		var button = document.createElement('button');
 		button.textContent = 'Fuck This Site';
+		div.style.position = 'absolute';
+		div.style.left = 0;
+		div.style.top = 0;
+		div.style.zIndex = 9999;
 		div.appendChild(button);
-		document.appendChild(div);
+		document.body.appendChild(div);
 
 		button.onclick = functhissite;
 	}
 
 	/* 해당 사이트가 아직 평가가 없는 경우 */
 	if(!store.get('fuckthissite')) {
-		createUI();
+		//createUI();
 	}
 
 }(this))
