@@ -26,4 +26,5 @@
 		//createUI();
 	}
 
+alert(store)
 }(this))
