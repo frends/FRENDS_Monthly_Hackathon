@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Storage</title>
+  <!-- bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- navbar -->
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="/">
+          HTML5 Storage Playground
+        </a>
+        <ul class="nav">
+          <li><a href="webstorage.html">Web Storage</a></li>
+          <li><a href="indexeddb.html">IndexedDB</a></li>
+          <li><a href="websql.html">Web SQL Database</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- contents -->
+  <div class="container">
+    <div class="hero-unit">
+      <h1>HTML5 Storage</h1>
+    </div>
+
+    <section id="detect">
+      <div class="page-header">
+        <h1>Detect Functionality</h1>
+      </div>
+      <h2>localStorage</h2>
+      <div class="alert" id="detect-local"></div>
+      <h2>sessionStorage</h2>
+      <div class="alert" id="detect-session"></div>
+    </section>
+
+    <section id="localstorage">
+      <div class="page-header">
+        <h1>LocalStorage</h1>
+      </div>
+
+      <h2>Set</h2>
+      <div class="row">
+        <div class="span6">
+<pre>localStorage.setItem(key, value);</pre>
+        </div>
+        <div class="span6 ">
+          <code>localStorage.setItem(</code>
+          <input type="text" class="input-small" id="localstorage-set-key" placeholder="key">
+          <code>, </code>
+          <input type="text" class="input-small" id="localstorage-set-value" placeholder="value">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="localstorage-set-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="localstorage-set-alert" style='display: none;'></div>
+
+      <h2>Get</h2>
+      <div class="row">
+        <div class="span6">
+<pre>localStorage.getItem(key);
+localStorage[key];
+localStorage.key;
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>localStorage.getItem(</code>
+          <input type="text" class="input-small" id="localstorage-get-key" placeholder="key">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="localstorage-get-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="localstorage-get-alert" style='display: none;'></div>
+
+      <h2>Get Key</h2>
+      <div class="row">
+        <div class="span6">
+<pre>localStorage.key(index);
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>localStorage.key(</code>
+          <input type="text" class="input-small" id="localstorage-getkey-index" placeholder="index">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="localstorage-getkey-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="localstorage-getkey-alert" style='display: none;'></div>
+
+      <h2>Remove</h2>
+      <div class="row">
+        <div class="span6">
+<pre>localStorage.removeItem(key);
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>localStorage.removeItem(</code>
+          <input type="text" class="input-small" id="localstorage-remove-key" placeholder="key">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="localstorage-remove-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="localstorage-remove-alert" style='display: none;'></div>
+
+      <h2>Clear</h2>
+      <div class="row">
+        <div class="span6">
+<pre>localStorage.clear();
+</pre>
+        </div>
+        <div class="span6 ">
+          <input class="btn btn-large btn-primary pull-right" type="button" id="localstorage-clear-run" value="Clear">
+        </div>
+      </div>
+      <div class="alert alert-info" id="localstorage-clear-alert" style='display: none;'></div>
+    </section>
+
+    <section id="sessionstorage">
+      <div class="page-header">
+        <h1>SessionStorage</h1>
+      </div>
+
+      <h2>Set</h2>
+      <div class="row">
+        <div class="span6">
+          <pre>sessionStorage.setItem(key, value);</pre>
+        </div>
+        <div class="span6 ">
+          <code>sessionStorage.setItem(</code>
+          <input type="text" class="input-small" id="sessionStorage-set-key" placeholder="key">
+          <code>, </code>
+          <input type="text" class="input-small" id="sessionStorage-set-value" placeholder="value">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="sessionStorage-set-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="sessionStorage-set-alert" style='display: none;'></div>
+
+      <h2>Get</h2>
+      <div class="row">
+        <div class="span6">
+<pre>sessionStorage.getItem(key);
+sessionStorage[key];
+sessionStorage.key;
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>sessionStorage.getItem(</code>
+          <input type="text" class="input-small" id="sessionStorage-get-key" placeholder="key">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="sessionStorage-get-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="sessionStorage-get-alert" style='display: none;'></div>
+
+      <h2>Get Key</h2>
+      <div class="row">
+        <div class="span6">
+<pre>sessionStorage.key(index);
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>sessionStorage.key(</code>
+          <input type="text" class="input-small" id="sessionStorage-getkey-index" placeholder="index">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="sessionStorage-getkey-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="sessionStorage-getkey-alert" style='display: none;'></div>
+
+      <h2>Remove</h2>
+      <div class="row">
+        <div class="span6">
+<pre>sessionStorage.removeItem(key);
+</pre>
+        </div>
+        <div class="span6 ">
+          <code>sessionStorage.removeItem(</code>
+          <input type="text" class="input-small" id="sessionStorage-remove-key" placeholder="key">
+          <code>);</code>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="sessionStorage-remove-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="sessionStorage-remove-alert" style='display: none;'></div>
+
+      <h2>Clear</h2>
+      <div class="row">
+        <div class="span6">
+<pre>sessionStorage.clear();
+</pre>
+        </div>
+        <div class="span6 ">
+          <input class="btn btn-large btn-primary pull-right" type="button" id="sessionStorage-clear-run" value="Clear">
+        </div>
+      </div>
+      <div class="alert alert-info" id="sessionStorage-clear-alert" style='display: none;'></div>
+    </section>
+  </div>
+  <!-- scripts -->
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      var hasLocalStorage = false;
+      var hasSessionStorage = false;
+      // detect localStorage
+      try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+
+        hasLocalStorage = true;
+        $('#detect-local').addClass('alert-success').html('지원합니다.');
+      } catch(e) {
+        hasLocalStorage = false;
+        $('#detect-local').addClass('alert-error').html('지원하지 않습니다.');
+      }
+      // detect sessionStorage
+      try {
+        sessionStorage.setItem('test', 'test');
+        sessionStorage.removeItem('test');
+
+        hasSessionStorage = true;
+        $('#detect-session').addClass('alert-success').html('지원합니다.');
+      } catch(e) {
+        hasSessionStorage = false;
+        $('#detect-session').addClass('alert-error').html('지원하지 않습니다.');
+      }
+
+      // event listeners
+      if (hasLocalStorage) {
+        $('#localstorage-set-run').click(function(e) {
+          var key = $('#localstorage-set-key').val().trim();
+          var value = $('#localstorage-set-value').val().trim();
+          if (key && value) {
+            localStorage.setItem(key, value);
+            $('#localstorage-set-alert').html('localStorage.length is ' + localStorage.length).show();
+          }
+        });
+
+        $('#localstorage-get-run').click(function(e) {
+          var key = $('#localstorage-get-key').val().trim();
+          if (key) {
+            $('#localstorage-get-alert').html(localStorage.getItem(key)).show();
+          }
+        });
+
+        $('#localstorage-getkey-run').click(function(e) {
+          var index = $('#localstorage-getkey-index').val().trim();
+          if (index && $.isNumeric(index)) {
+            $('#localstorage-getkey-alert').html(localStorage.key(index)).show();
+          }
+        });
+
+        $('#localstorage-remove-run').click(function(e) {
+          var key = $('#localstorage-remove-key').val().trim();
+          if (key) {
+            localStorage.removeItem(key);
+            $('#localstorage-remove-alert').html('localStorage.length is ' + localStorage.length).show();
+          }
+        });
+
+        $('#localstorage-clear-run').click(function(e) {
+          localStorage.clear();
+          $('#localstorage-clear-alert').html('localStorage.length is ' + localStorage.length).show();
+        });
+      }
+
+      if (hasSessionStorage) {
+        $('#sessionStorage-set-run').click(function(e) {
+          var key = $('#sessionStorage-set-key').val().trim();
+          var value = $('#sessionStorage-set-value').val().trim();
+          if (key && value) {
+            sessionStorage.setItem(key, value);
+            $('#sessionStorage-set-alert').html('sessionStorage.length is ' + sessionStorage.length).show();
+          }
+        });
+
+        $('#sessionStorage-get-run').click(function(e) {
+          var key = $('#sessionStorage-get-key').val().trim();
+          if (key) {
+            $('#sessionStorage-get-alert').html(sessionStorage.getItem(key)).show();
+          }
+        });
+
+        $('#sessionStorage-getkey-run').click(function(e) {
+          var index = $('#sessionStorage-getkey-index').val().trim();
+          if (index && $.isNumeric(index)) {
+            $('#sessionStorage-getkey-alert').html(sessionStorage.key(index)).show();
+          }
+        });
+
+        $('#sessionStorage-remove-run').click(function(e) {
+          var key = $('#sessionStorage-remove-key').val().trim();
+          if (key) {
+            sessionStorage.removeItem(key);
+            $('#sessionStorage-remove-alert').html('sessionStorage.length is ' + sessionStorage.length).show();
+          }
+        });
+
+        $('#sessionStorage-clear-run').click(function(e) {
+          sessionStorage.clear();
+          $('#sessionStorage-clear-alert').html('sessionStorage.length is ' + sessionStorage.length).show();
+        });
+      }
+    });
+  </script>
+</body>
+</html>
