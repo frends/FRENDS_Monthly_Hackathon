@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Storage</title>
+  <!-- bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- navbar -->
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="/">
+          HTML5 Storage Playground
+        </a>
+        <ul class="nav">
+          <li><a href="webstorage.html">Web Storage</a></li>
+          <li><a href="indexeddb.html">IndexedDB</a></li>
+          <li><a href="websql.html">Web SQL Database</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- contents -->
+  <div class="container">
+    <div class="hero-unit">
+      <h1>HTML5 IndexedDB</h1>
+    </div>
+
+    <section id="detect">
+      <div class="page-header">
+        <h1>Detect Functionality</h1>
+      </div>
+      <div class="alert" id="detect-indexeddb"></div>
+    </section>
+
+    <section id="crud">
+      <div class="page-header">
+        <h1>Open Database</h1>
+      </div>
+      <div class="row">
+        <div class="span6">
+<pre>var indexedDB = webkitIndexedDB;
+
+var request = indexedDB.open(DBNAME[, DESCRIPTION]);
+
+$(request).on('success', function(e) {
+  var db = e.target.result;
+});
+
+$(request).on('failure', function(e) {
+});</pre>
+        </div>
+        <div class="span6 ">
+          <code>var indexedDB = webkitIndexedDB;</code><br>
+          <br>
+          <code>var request = indexedDB.open(<input type="text" class="input-small" id="opendb-dbname" placeholder="DBNAME">, <input type="text" class="input-small" id="opendb-description" placeholder="DESCRIPTION">);</code><br>
+          <br>
+          <code>$(request).on('success', function(e) {</code><br>
+          <code>&nbsp;&nbsp;var db = e.target.result;</code><br>
+          <code>&nbsp;&nbsp;// use db</code><br>
+          <code>});</code><br>
+          <input class="btn btn-large btn-primary pull-right" type="button" id="opendb-run" value="Run">
+        </div>
+      </div>
+      <div class="alert alert-info" id="opendb-alert" style='display: none;'></div>
+
+    </section>
+  </div>
+  <!-- scripts -->
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      var hasIndexedDB = false;
+      // detect indexedDB
+      hasIndexedDB = "indexedDB" in window || "webkitIndexedDB" in window || "mozIndexedDB" in window || "moz_indexedDB" in window || "oIndexedDB" in window || "msIndexedDB" in window;
+
+      // event listeners
+      if (hasIndexedDB) {
+        $('#detect-indexeddb').addClass('alert-success').html('지원합니다.');
+
+        var indexedDB;
+        $('#opendb-run').click(function(e) {
+          var dbname = $('#opendb-dbname').val().trim();
+          var description = $('#opendb-description').val().trim();
+
+          indexedDB = webkitIndexedDB;
+
+          var request = indexedDB.open(dbname, description);
+
+          $(request).on('success', function(e) {
+            var db = e.target.result;
+            $('#opendb-alert').removeClass('alert-error')
+              .append($('<p>' + 'db.name: ' + db.name + '</p>'))
+              .append($('<p>' + 'db.version: ' + db.version + '</p>'))
+              .show();
+          });
+
+          $(request).on('failure', function(e) {
+            $('#opendb-alert').removeClass('alert-error')
+              .append($('<p>')).html('fail to open database')
+              .show();
+          });
+        });
+
+      } else {
+        $('#detect-indexeddb').addClass('alert-error').html('지원하지 않습니다.');
+      }
+    });
+  </script>
+</body>
+</html>
