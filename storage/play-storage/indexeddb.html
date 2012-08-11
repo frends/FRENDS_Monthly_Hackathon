@@ -87,7 +87,7 @@ $(request).on('failure', function(e) {
           var dbname = $('#opendb-dbname').val().trim();
           var description = $('#opendb-description').val().trim();
 
-          indexedDB = webkitIndexedDB;
+          indexedDB = indexedDB || webkitIndexedDB || mozIndexedDB || moz_indexedDB || oIndexedDB || msIndexedDB;
 
           var request = indexedDB.open(dbname, description);
 
