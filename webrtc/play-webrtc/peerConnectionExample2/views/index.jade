@@ -1,0 +1,123 @@
+extends layout
+
+block content
+  h1= title
+  video#vid1(autoplay)
+  video#vid2(autoplay)
+  br
+  button#btn1 Start
+  button#btn2(disabled) Call
+  button#btn3(disabled) Hang Up
+  script(src="/javascripts/jquery.js")
+  script
+    $(document).ready(function() {
+      var vid1 = $("#vid1")[0];
+      var vid2 = $("#vid2")[0];
+      var btn1 = $("#btn1")[0];
+      var btn2 = $("#btn2")[0];
+      var btn3 = $("#btn3")[0];
+
+      $(btn1).click(start);
+      $(btn2).click(call);
+      $(btn3).click(hangup);
+
+      var pc1,pc2;
+      var localstream;
+
+      function start() {
+                console.log("getUserMedia로 Stream 요청");
+        btn1.disabled = true;
+        navigator.webkitGetUserMedia({audio:true, video:true}, gotStream, function() {});
+      }
+
+      // getUsetMedia의 콜백
+      function gotStream(stream){
+                console.log('getUserMedia에서 stream 받음');
+        vid1.src = webkitURL.createObjectURL(stream);
+        localstream = stream;
+        btn2.disabled = false;
+      }
+
+      function call() {
+        // 버튼 설정
+        btn2.disabled = true;
+        btn3.disabled = false;
+
+                console.log("Starting call");
+
+        // 로컬스트림에서 사용하는 비디오와 오디오 종류 출력
+        if (localstream.videoTracks.length > 0) {
+                console.log('Using Video device: ' + localstream.videoTracks[0].label);
+        }
+        if (localstream.audioTracks.length > 0) {
+                console.log('Using Audio device: ' + localstream.audioTracks[0].label);
+        }
+
+        // 1. new peerConnection00
+        pc1 = new webkitPeerConnection00(null, iceCallback1);
+                console.log("Created local peer connection object pc1");
+        pc2 = new webkitPeerConnection00(null, iceCallback2);
+                console.log("Created remote peer connection object pc2");
+        pc2.onaddstream = gotRemoteStream;
+
+        // 2. addStream
+        pc1.addStream(localstream);
+                console.log("Adding Local Stream to peer connection");
+
+        // 3. make offer
+        var offer = pc1.createOffer(null);
+                console.log("Created offer:\n" + offer.toSdp());
+
+        // 4. set Description with SDP_OFFER
+        // pc1의 로컬을 offer로 pc2의 리모트를 offer로
+        pc1.setLocalDescription(pc1.SDP_OFFER, offer);
+                console.log("SetLocalDesc1");
+        pc2.setRemoteDescription(pc2.SDP_OFFER, offer);
+                console.log("SetRemoteDesc2");
+
+        // 5. make answer
+        var answer = pc2.createAnswer(offer.toSdp(), {has_audio:true, has_video:true});
+                console.log("Created answer:\n" + answer.toSdp());
+
+        // 6. set Description with SDP_ANSWER
+        // pc2의 로컬을 answer로 pc1의 리모트를 answer
+        pc2.setLocalDescription(pc2.SDP_ANSWER, answer);
+                console.log("SetLocalDesc2");
+        pc1.setRemoteDescription(pc1.SDP_ANSWER, answer);
+                console.log("SetRemoteDesc1");
+
+        // 7. startIce();
+        pc1.startIce();
+        pc2.startIce();
+                console.log("Started ICE for both local & remote");
+      }
+
+      function gotRemoteStream(e){
+        vid2.src = webkitURL.createObjectURL(e.stream);
+                console.log("Received remote stream");
+      }
+
+      function iceCallback1(candidate,bMore){
+        if (candidate) {
+          pc2.processIceMessage(candidate);
+                console.log("Local ICE candidate: " + candidate.toSdp());
+        }
+      }
+
+      function iceCallback2(candidate,bMore){
+        if (candidate) {
+          pc1.processIceMessage(candidate);
+                console.log("Remote ICE candidate: " + candidate.toSdp());
+        }
+      }
+
+      function hangup() {
+                console.log("Ending call");
+        pc1.close();
+        pc2.close();
+        pc1 = null;
+        pc2 = null;
+        btn3.disabled = true;
+        btn2.disabled = false;
+      }
+    });
