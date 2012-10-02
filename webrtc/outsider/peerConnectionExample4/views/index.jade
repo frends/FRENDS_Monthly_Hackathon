@@ -1,0 +1,174 @@
+extends layout
+
+block content
+  h1= title
+  video#vid1(autoplay)
+  video#vid2(autoplay)
+  br
+  button#btn1 Start
+  button#btn2(disabled) Call
+  button#btn3(disabled) Hang Up
+  script(src="/javascripts/jquery.js")
+  script
+    $(document).ready(function() {
+      var vid1 = $("#vid1")[0];
+      var vid2 = $("#vid2")[0];
+
+      var btn1 = $("#btn1")[0];
+      var btn2 = $("#btn2")[0];
+      var btn3 = $("#btn3")[0];
+
+      $(btn1).click(start);
+      $(btn2).click(call);
+      $(btn3).click(hangup);
+
+      var pc;
+      var localStream;
+
+      var ws = new WebSocket("ws://" + location.host);
+
+      ws.onopen = function() {
+        console.log('socket is conncected');
+      }
+
+      ws.onmessage = function(msg) {
+        var data = JSON.parse(msg.data);
+
+        if (data.type == 'offer') {
+          console.log('received offer: ' + data.sdp);
+          btn3.disabled = false;
+
+          // 3. peerConnection00 객체 생성
+          pc = new webkitPeerConnection00(null, iceCallback);
+          console.log("join : Created remote peer connection object pc");
+
+          // 4. peerConnection에 로컬스트림 추가
+          pc.onaddstream = gotRemoteStream; // 원격에서 스트림을 받으면 발생하는 이벤트
+          pc.addStream(localStream);
+
+          // 5. SDP_OFFER와 받은 오퍼로 디스크립션을 설정한다.
+          pc.setRemoteDescription(pc.SDP_OFFER, new SessionDescription(data.sdp));
+          console.log('join : Remote Description 설정');
+
+          // 6. answer 생성
+          var offer = pc.remoteDescription;
+          var answer = pc.createAnswer(offer.toSdp(), {has_audio:true, has_video:true});
+          console.log('join : Created answer:\n' + answer.toSdp());
+
+          // 7. SDP_ANSWER와 answer로 로컬 디스크립션 설정
+          pc.setLocalDescription(pc.SDP_ANSWER, answer);
+          console.log('join : Local Description 설정');
+
+          // 8 answer 전송
+          ws.send(JSON.stringify({type: 'answer', sdp: answer.toSdp()}));
+
+          // 9. startIce();
+          pc.startIce();
+          console.log('join : start ice');
+        } else if (data.type == 'answer') {
+          console.log('call : received answer: ' + data.sdp);
+
+          // 8. SDP_ANSWER와 받은 answer로 원격 디스크립션 설정
+          pc.setRemoteDescription(pc.SDP_ANSWER, new SessionDescription(data.sdp));
+          console.log('call : Set Remote Description');
+
+          // 9. startIce();
+          pc.startIce();
+          console.log('call : Started ICE');
+        } else if (data.type == 'candidate') {
+          console.log('received candidate: ', data);
+
+          var newCandidate = new IceCandidate(data.label, data.candidate);
+          pc.processIceMessage(newCandidate);
+        } else {
+          console.log('message is received. something is wrong');
+          console.log(msg);
+          console.log(msg.data);
+        }
+      }
+
+      ws.onclose = function() {
+        console.log('socket is closed');
+      }
+
+      // 1. getUserMedia 시작
+      function start() {
+        console.log('start : getUserMedia로 Stream 요청');
+
+        btn1.disabled = true;
+        navigator.webkitGetUserMedia({audio:true, video:true}, gotStream, function() {});
+      }
+
+      // 2. getUsetMedia의 스트림을 localstrem에 저장
+      function gotStream(stream){
+        console.log('gotStream : getUserMedia에서 stream 받음');
+
+        vid1.src = webkitURL.createObjectURL(stream);
+        localStream = stream;
+        btn2.disabled = false;
+      }
+
+      // caller
+      function call() {
+        btn2.disabled = true;
+        btn3.disabled = false;
+
+        console.log('call : Starting call');
+
+        // 로컬스트림에서 사용하는 비디오와 오디오 종류 출력(연결과는 상관없음)
+        if (localStream.videoTracks.length > 0) {
+          console.log('call : Using Video device: ', localStream.videoTracks[0].label);
+        }
+        if (localStream.audioTracks.length > 0) {
+          console.log('call : Using Audio device: ', localStream.audioTracks[0].label);
+        }
+
+        // 3. peerConnection00 객체 생성
+        pc = new webkitPeerConnection00(null, iceCallback);
+        console.log('call : peerConnection 객체 생성');
+
+        // 4. peerConnection에 localStream 추가
+        pc.onaddstream = gotRemoteStream; // 원격에서 스트림을 받으면 발생하는 이벤트
+
+        pc.addStream(localStream);
+        console.log('call : peerConnection에 로컬스트림 추가');
+
+        // 5. offer 생성
+        var offer = pc.createOffer({audio:true, video:true});
+        console.log('call : Created offer:\n' + offer.toSdp());
+
+        // 6. SDP_OFFER와 offer로 로컬디스크립션 설정
+        pc.setLocalDescription(pc.SDP_OFFER, offer);
+        console.log('call : Set Local Description');
+
+        // 7. offer 전송
+        ws.send(JSON.stringify({type: 'offer', sdp: offer.toSdp()}));
+      }
+
+      // 상대방에서 스트림을 받기시작하면 발생하는 콜백
+      function gotRemoteStream(e){
+        vid2.src = webkitURL.createObjectURL(e.stream);
+        console.log("Received remote stream");
+      }
+
+      // caller용 iceCallback, peerConnection이 연결되면 발생한다.
+      function iceCallback(candidate,bMore){
+        if (candidate) {
+          console.log("Local ICE candidate: " + candidate.toSdp());
+          pc.processIceMessage(candidate);
+
+          // candidate를 상대편으로 보낸다.
+          ws.send(JSON.stringify({type: 'candidate', label: candidate.label, candidate: candidate.toSdp()}));
+          console.log('candidate is sent');
+        }
+      }
+
+      // 연결을 끊는다`
+      function hangup() {
+        console.log("Ending call");
+        pc.close();
+        pc = null;
+        btn3.disabled = true;
+        btn2.disabled = false;
+      }
+    });
