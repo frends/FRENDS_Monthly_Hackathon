@@ -1,0 +1,211 @@
+extends layout
+
+block content
+  h1= title
+  video#vid(autoplay)
+  br
+  button#btn1 Start
+  button#btn2(disabled) Call
+  button#btn3(disabled) Hang Up
+  button#btn4 Join
+  script(src="/javascripts/jquery.js")
+  script
+    $(document).ready(function() {
+      var vid = $("#vid")[0];
+
+      var btn1 = $("#btn1")[0];
+      var btn2 = $("#btn2")[0];
+      var btn3 = $("#btn3")[0];
+      var btn4 = $("#btn4")[0];
+
+      $(btn1).click(start);
+      $(btn2).click(call);
+      $(btn3).click(hangup);
+      $(btn4).click(join);
+
+      var pc;
+      var localStream;
+
+      // 1. getUserMedia 시작
+      function start() {
+        console.log('start : getUserMedia로 Stream 요청');
+
+        btn1.disabled = true;
+        navigator.webkitGetUserMedia({audio:true, video:true}, gotStream, function() {});
+      }
+
+      // 2. getUsetMedia의 스트림을 localstrem에 저장
+      function gotStream(stream){
+        console.log('gotStream : getUserMedia에서 stream 받음');
+
+        vid.src = webkitURL.createObjectURL(stream);
+        localStream = stream;
+        btn2.disabled = false;
+        btn4.disabled = false;
+      }
+
+      // caller
+      function call() {
+        btn2.disabled = true;
+        btn3.disabled = false;
+        btn4.disabled = true;
+
+        console.log('call : Starting call');
+
+        // 로컬스트림에서 사용하는 비디오와 오디오 종류 출력(연결과는 상관없음)
+        if (localStream.videoTracks.length > 0) {
+          console.log('call : Using Video device: ', localStream.videoTracks[0].label);
+        }
+        if (localStream.audioTracks.length > 0) {
+          console.log('call : Using Audio device: ', localStream.audioTracks[0].label);
+        }
+
+        // 3. peerConnection00 객체 생성
+        pc = new webkitPeerConnection00(null, iceCallback1);
+        console.log('call : peerConnection 객체 생성');
+
+        pc.addStream(localStream);
+        console.log('call : peerConnection에 로컬스트림 추가');
+
+        // 5. offer 생성
+        var offer = pc.createOffer({audio:true, video:true});
+        console.log('call : Created offer:\n' + offer.toSdp());
+
+        // 6. SDP_OFFER와 offer로 로컬디스크립션 설정
+        pc.setLocalDescription(pc.SDP_OFFER, offer);
+        console.log('call : Set Local Description');
+
+        // 7. offer 전송
+        $.post("/sendOfferToCallee", { sdp: offer.toSdp()}, function(data) {
+          console.log('call : offer is sent: ' + data.success);
+
+          // 8. answer 받음
+          console.log('call : wating for answer');
+          $.get("/getAnswerToCallee", function(data) {
+            console.log('call : received answer: ' + data.sdp);
+
+            // 9. SDP_ANSWER와 받은 answer로 원격 디스크립션 설정
+            pc.setRemoteDescription(pc.SDP_ANSWER, new SessionDescription(data.sdp));
+            console.log('call : Set Remote Description');
+
+            // 10. startIce();
+            pc.startIce();
+            console.log('call : Started ICE');
+          });
+        });
+      }
+
+      // callee
+      function join() {
+        btn2.disabled = true;
+        btn3.disabled = false;
+        btn4.disabled = true;
+
+        console.log('join : Starting Join');
+
+        // 3. offer 받음
+        $.get("/getOfferFromCaller", function(data) {
+          console.log('received offer: ' + data.sdp);
+
+          // 4. peerConnection00 객체 생성
+          pc = new webkitPeerConnection00(null, iceCallback2);
+          console.log("join : Created remote peer connection object pc");
+
+          // 5. peerConnection에 로컬스트림 추가
+          pc.onaddstream = gotRemoteStream; // 원격에서 스트림을 받으면 발생하는 이벤트
+
+          // 6. SDP_OFFER와 받은 오퍼로 디스크립션을 설정한다.
+          pc.setRemoteDescription(pc.SDP_OFFER, new SessionDescription(data.sdp));
+          console.log('join : Remote Description 설정');
+
+          // 8. answer 생성
+          var offer = pc.remoteDescription;
+          var answer = pc.createAnswer(offer.toSdp(), {has_audio:true, has_video:true});
+          console.log('join : Created answer:\n' + answer.toSdp());
+
+          // 9. SDP_ANSWER와 answer로 로컬 디스크립션 설정
+          pc.setLocalDescription(pc.SDP_ANSWER, answer);
+          console.log('join : Local Description 설정');
+
+          // 10. answer 전송
+          $.post("/sendAnswerToCaller", { sdp: answer.toSdp()}, function(data) {
+            console.log('join : answer is sent: ' + data.success);
+
+            // 11. startIce();
+            pc.startIce();
+            console.log('join : start ice');
+          });
+        });
+      }
+
+      // 상대방에서 스트림을 받기시작하면 발생하는 콜백
+      function gotRemoteStream(e){
+        vid.src = webkitURL.createObjectURL(e.stream);
+        console.log("Received remote stream");
+      }
+
+      // caller용 iceCallback, peerConnection이 연결되면 발생한다.
+      function iceCallback1(candidate,bMore){
+        if (candidate) {
+          console.log("Local ICE candidate: " + candidate.toSdp());
+          pc.processIceMessage(candidate);
+
+          // candidate를 상대편으로 보낸다.
+          $.post("/sendCandidateToCallee",
+                 {label: candidate.label, candidate: candidate.toSdp()},
+                 function(data) {
+                   console.log('candidate is sent: ' + data.success);
+                   console.log('wating for candidate');
+
+                   // 상대편 candidate를 받는다.
+                   var requestCandidate = function() {
+                     // 5. request candidate
+                     $.get("/getCandidateFromCallee", function(data) {
+                       console.log('received candidate: ' + data.candidate);
+
+                       var newCandidate = new IceCandidate(data.label, data.candidate);
+                       pc.processIceMessage(newCandidate);
+                       requestCandidate();
+                     });
+                   }
+                   requestCandidate();
+          });
+        }
+      }
+
+      // callee용 iceCallback, peerConnection이 연결되면 발생한다.
+      function iceCallback2(candidate,bMore){
+        if (candidate) {
+          console.log("Local ICE candidate: " + candidate.toSdp());
+          pc.processIceMessage(candidate);
+
+          // candidate를 상대편으로 보낸다.
+          $.post("/sendCandidateToCaller",
+            {label: candidate.label, candidate: candidate.toSdp()},
+            function(data) {
+              console.log('candidate is sent: ' + data.success);
+              console.log('wating for candidate');
+
+              // 상대편 candidate를 받는다.
+              var requestCandidate = function() {
+                $.get("/getCandidateFromCaller", function(data) {
+                        console.log('received candidate: ' + data.candidate);
+
+                  var newCandidate = new IceCandidate(data.label, data.candidate);
+                  pc.processIceMessage(newCandidate);
+                });
+              }
+              requestCandidate();
+            });
+        }
+      }
+
+      // 연결을 끊는다`
+      function hangup() {
+        console.log("Ending call");
+        pc.close();
+        pc = null;
+        btn3.disabled = true;
+        btn2.disabled = false;
+      }
+    });

@@ -11,22 +11,22 @@ var offer = null
 
 var notifier = new Event();
 
-exports.receiveOffer = function(req, res){
-  console.log('Step 1 - receiveOffer');
+exports.sendOfferToCallee = function(req, res){
+  console.log('Step 1 - sendOfferToCallee');
   console.log(req.body.sdp);
   offer = req.body.sdp;
   res.send({'success':true});
   res.end();
 };
 
-exports.sendOffer = function(req, res){
-  console.log('Step 2 - sendOffer');
+exports.getOfferFromCaller = function(req, res){
+  console.log('Step 2 - getOfferFromCaller');
   res.send({'sdp': offer});
   res.end();
 };
 
-exports.receiveAnswer = function(req, res){
-  console.log('Step 3 - receiveAnswer');
+exports.sendAnswerToCaller = function(req, res){
+  console.log('Step 3 - sendAnswerToCaller');
   console.log(req.body.sdp);
   answer = req.body.sdp;
   notifier.emit('answer');
@@ -34,35 +34,17 @@ exports.receiveAnswer = function(req, res){
   res.end();
 };
 
-exports.sendAnswer = function(req, res){
+exports.getAnswerToCallee = function(req, res){
   console.log('wating answer');
   notifier.on('answer', function() {
-    console.log('Step 4 - sendAnswer');
+    console.log('Step 4 - getAnswerToCallee');
     res.send({'sdp': answer});
     res.end();
   });
 };
 
-exports.receiveAnswer = function(req, res){
-  console.log('Step 3 - receiveAnswer');
-  console.log(req.body.sdp);
-  answer = req.body.sdp;
-  notifier.emit('answer');
-  res.send({'success':true});
-  res.end();
-};
-
-exports.sendAnswer = function(req, res){
-  console.log('wating answer');
-  notifier.on('answer', function() {
-    console.log('Step 4 - sendAnswer');
-    res.send({'sdp': answer});
-    res.end();
-  });
-};
-
-exports.receiveCallerCandidate = function(req, res){
-  console.log('Step 5 - receiveCallerCandidate');
+exports.sendCandidateToCallee = function(req, res){
+  console.log('Step 5 - sendCandidateToCallee');
   console.log(req.body);
   callerCandidate.push(req.body);
   notifier.emit('callerCandidate');
@@ -70,24 +52,24 @@ exports.receiveCallerCandidate = function(req, res){
   res.end();
 };
 
-exports.sendCallerCandidate = function(req, res){
+exports.getCandidateFromCaller = function(req, res){
   console.log('wating CallerCandidate');
   var candidate = callerCandidate.pop();
   if (candidate) {
-    console.log('Step 6 - sendCallerCandidate');
+    console.log('Step 6 - getCandidateFromCaller');
     res.send(candidate);
     res.end();
   } else {
     notifier.once('callerCandidate', function() {
-      console.log('Step 6 - sendCallerCandidate');
+      console.log('Step 6 - getCandidateFromCaller');
       res.send(candidate);
       res.end();
     });
   }
 };
 
-exports.receiveCalleeCandidate = function(req, res){
-  console.log('Step 7 - receiveCalleeCandidate');
+exports.sendCandidateToCaller = function(req, res){
+  console.log('Step 7 - sendCandidateToCaller');
   console.log(req.body);
   calleeCandidate.push(req.body);
   notifier.emit('calleeCandidate');
@@ -95,16 +77,16 @@ exports.receiveCalleeCandidate = function(req, res){
   res.end();
 };
 
-exports.sendCalleeCandidate = function(req, res){
+exports.getCandidateFromCallee = function(req, res){
   console.log('wating CalleeCandidate');
   var candidate = calleeCandidate.pop();
   if (candidate) {
-    console.log('Step 8 - sendCalleeCandidate');
+    console.log('Step 8 - getCandidateFromCallee');
     res.send(candidate);
     res.end();
   } else {
     notifier.on('calleeCandidate', function() {
-      console.log('Step 8 - sendCalleeCandidate');
+      console.log('Step 8 - getCandidateFromCallee');
       res.send(candidate);
       res.end();
     });

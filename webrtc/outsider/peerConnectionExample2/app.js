@@ -5,7 +5,7 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
+  , sdp = require('./routes/sdp')
   , http = require('http')
   , path = require('path');
 
@@ -28,7 +28,15 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
-app.get('/users', user.list);
+
+app.post('/sendOfferToCallee', sdp.sendOfferToCallee);
+app.get('/getOfferFromCaller', sdp.getOfferFromCaller);
+app.post('/sendAnswerToCaller', sdp.sendAnswerToCaller);
+app.get('/getAnswerToCallee', sdp.getAnswerToCallee);
+app.post('/sendCandidateToCallee', sdp.sendCandidateToCallee);
+app.get('/getCandidateFromCaller', sdp.getCandidateFromCaller);
+app.post('/sendCandidateToCaller', sdp.sendCandidateToCaller);
+app.get('/getCandidateFromCallee', sdp.getCandidateFromCallee);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
